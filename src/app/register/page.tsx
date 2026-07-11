@@ -91,7 +91,7 @@ export default function RegisterPage() {
             <Sparkles className="h-6 w-6 text-indigo-400" />
             <span>Create Account</span>
           </h2>
-          <p className="text-sm text-slate-400 mt-2">Join FunVerse and start your crowdfunding journey</p>
+          <p className="text-sm text-slate-400 mt-2">Join FundVerse and start your crowdfunding journey</p>
         </div>
 
         {error && (

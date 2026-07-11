@@ -11,10 +11,10 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 text-lg font-bold text-white tracking-wider">
               <Megaphone className="h-5 w-5 text-indigo-400" />
-              <span>FunVerse</span>
+              <span>FundVerse</span>
             </Link>
             <p className="text-xs leading-relaxed text-slate-500">
-              FunVerse is a modern, secure crowdfunding network enabling creators to showcase projects and backers to fund next-gen ideas through transparent credit exchanges.
+              FundVerse is a modern, secure crowdfunding network enabling creators to showcase projects and backers to fund next-gen ideas through transparent credit exchanges.
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="border-t border-white/5 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} FunVerse. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} FundVerse. All rights reserved.</p>
           <div className="flex gap-4 mt-4 sm:mt-0">
             <Link href="/privacy" className="hover:text-slate-300">
               Privacy Policy

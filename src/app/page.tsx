@@ -45,8 +45,8 @@ export default function HomePage() {
 
   const faqs = [
     {
-      q: 'What is FunVerse and how does it work?',
-      a: 'FunVerse is a crowdfunding ecosystem where backers purchase digital credits via Stripe and pledge them to active campaigns. Creators receive funding in credits, which they can withdraw directly to their bank account once approved.',
+      q: 'What is FundVerse and how does it work?',
+      a: 'FundVerse is a crowdfunding ecosystem where backers purchase digital credits via Stripe and pledge them to active campaigns. Creators receive funding in credits, which they can withdraw directly to their bank account once approved.',
     },
     {
       q: 'How do I top up my credit wallet?',
@@ -66,7 +66,7 @@ export default function HomePage() {
     {
       name: 'Sarah Jenkins',
       role: 'Hardware Engineer',
-      quote: 'Launching our drone on FunVerse was seamless. Payout approval was processed within 24 hours of requesting.',
+      quote: 'Launching our drone on FundVerse was seamless. Payout approval was processed within 24 hours of requesting.',
       avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sarah',
     },
     {

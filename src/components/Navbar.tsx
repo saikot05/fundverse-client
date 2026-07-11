@@ -97,7 +97,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
               <Megaphone className="h-6 w-6 text-indigo-400" />
-              <span>FunVerse</span>
+              <span>FundVerse</span>
             </Link>
           </div>
 

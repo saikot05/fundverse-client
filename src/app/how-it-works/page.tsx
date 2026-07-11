@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
     <div className="flex-1 bg-slate-950 p-6 sm:p-10 text-white max-w-5xl mx-auto w-full">
       <div className="text-center py-10 max-w-2xl mx-auto space-y-3">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-indigo-400">
-          How FunVerse Works
+          How FundVerse Works
         </h1>
         <p className="text-sm text-slate-400">
           A step-by-step guide to our secure and transparent crowdfunding mechanics.

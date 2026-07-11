@@ -165,7 +165,7 @@ export default function LoginPage() {
         </button>
 
         <div className="mt-6 text-center text-sm text-slate-400">
-          <span>New to FunVerse? </span>
+          <span>New to FundVerse? </span>
           <Link href="/register" className="text-indigo-400 hover:underline font-medium">
             Create an Account
           </Link>

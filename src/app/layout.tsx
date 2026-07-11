@@ -11,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'FunVerse | Secure Crowdfunding Platform',
+  title: 'FundVerse | Secure Crowdfunding Platform',
   description:
-    'Empower builders and creators. Pledge credits, initiate Stripe checkouts, and withdraw funds transparently on FunVerse.',
+    'Empower builders and creators. Pledge credits, initiate Stripe checkouts, and withdraw funds transparently on FundVerse.',
 };
 
 export default function RootLayout({

@@ -8,7 +8,7 @@ export default function AboutPage() {
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-            About FunVerse
+            About FundVerse
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
             Empowering creators, innovators, and changemakers to fuel their dreams through transparent, credit-backed community support.
