@@ -4,13 +4,13 @@ import { MongoClient } from 'mongodb';
 
 const mongoUri = process.env.MONGODB_URI as string;
 const client = new MongoClient(mongoUri);
-const db = client.db(process.env.MONGODB_DB_NAME || 'fundverse');
+const db = client.db(process.env.MONGODB_DB_NAME);
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
-  secret: process.env.BETTER_AUTH_SECRET ,
+  secret: process.env.BETTER_AUTH_SECRET,
   user: {
     modelName: 'users',
     additionalFields: {
@@ -40,8 +40,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || 'mock-google-client-id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'mock-google-client-secret',
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
   databaseHooks: {
