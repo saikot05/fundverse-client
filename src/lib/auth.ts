@@ -2,13 +2,13 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
 
-const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/fundverse';
+const mongoUri = process.env.MONGODB_URI as string;
 const client = new MongoClient(mongoUri);
 const db = client.db();
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, { client }),
-  secret: process.env.BETTER_AUTH_SECRET || 'better_auth_secret_key_1234567890123456',
+  secret: process.env.BETTER_AUTH_SECRET,
   user: {
     additionalFields: {
       role: {
