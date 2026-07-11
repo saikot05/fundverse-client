@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb';
 
 const mongoUri = process.env.MONGODB_URI as string;
 const client = new MongoClient(mongoUri);
-const db = client.db();
+const db = client.db('fundverse');
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
