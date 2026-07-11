@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authClient } from '../lib/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -42,27 +43,84 @@ api.interceptors.response.use(
 // Auth Services
 export const authService = {
   register: async (data: any) => {
-    const res = await api.post('/auth/register', data);
-    if (res.data.token) {
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+    const res = await authClient.signUp.email({
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      image: data.image || '',
+      role: data.role || 'supporter', // Custom field mapping
+    } as any);
+
+    if (res.error) {
+      throw new Error(res.error.message || 'Registration failed.');
     }
-    return res.data;
+
+    const responseData = res.data as any;
+    const userData = {
+      id: responseData?.user?.id,
+      name: responseData?.user?.name,
+      email: responseData?.user?.email,
+      role: responseData?.user?.role || 'supporter',
+      credits: responseData?.user?.credits || 0,
+      image: responseData?.user?.image || undefined,
+    };
+
+    localStorage.setItem('token', responseData?.session?.token || 'better-auth-session');
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    return { user: userData, token: responseData?.session?.token || 'better-auth-session' };
   },
+
   login: async (data: any) => {
-    const res = await api.post('/auth/login', data);
-    if (res.data.token) {
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+    const res = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (res.error) {
+      throw new Error(res.error.message || 'Login failed.');
     }
-    return res.data;
+
+    const responseData = res.data as any;
+    const userData = {
+      id: responseData?.user?.id,
+      name: responseData?.user?.name,
+      email: responseData?.user?.email,
+      role: responseData?.user?.role || 'supporter',
+      credits: responseData?.user?.credits || 0,
+      image: responseData?.user?.image || undefined,
+    };
+
+    localStorage.setItem('token', responseData?.session?.token || 'better-auth-session');
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    return { user: userData, token: responseData?.session?.token || 'better-auth-session' };
   },
+
   getCurrentUser: async () => {
-    const res = await api.get('/auth/me');
-    return res.data;
+    const res = await authClient.getSession();
+    if (res.error || !res.data) {
+      throw new Error('Not authenticated.');
+    }
+
+    const responseData = res.data as any;
+    const userData = {
+      id: responseData?.user?.id,
+      name: responseData?.user?.name,
+      email: responseData?.user?.email,
+      role: responseData?.user?.role || 'supporter',
+      credits: responseData?.user?.credits || 0,
+      image: responseData?.user?.image || undefined,
+    };
+
+    return { user: userData };
   },
+
   logout: async () => {
-    await api.post('/auth/logout');
+    const res = await authClient.signOut();
+    if (res.error) {
+      throw new Error(res.error.message || 'Logout failed.');
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   },
