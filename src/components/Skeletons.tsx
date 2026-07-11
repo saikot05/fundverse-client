@@ -1,19 +1,20 @@
 import React from 'react';
+import { Skeleton } from '@heroui/react';
 
 export const CampaignSkeleton = () => {
   return (
-    <div className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden p-5 space-y-4 animate-pulse">
-      <div className="h-44 bg-slate-800 rounded-xl w-full" />
+    <div className="border border-border rounded-2xl overflow-hidden p-5 space-y-4 bg-surface">
+      <Skeleton className="h-44 w-full rounded-xl" />
       <div className="space-y-2">
-        <div className="h-4 bg-slate-800 rounded w-2/3" />
-        <div className="h-3 bg-slate-800 rounded w-full" />
-        <div className="h-3 bg-slate-800 rounded w-5/6" />
+        <Skeleton className="h-4 w-2/3 rounded-lg" />
+        <Skeleton className="h-3 w-full rounded-lg" />
+        <Skeleton className="h-3 w-5/6 rounded-lg" />
       </div>
       <div className="space-y-2 pt-2">
-        <div className="h-2.5 bg-slate-800 rounded w-full" />
+        <Skeleton className="h-2.5 w-full rounded-full" />
         <div className="flex justify-between">
-          <div className="h-3 bg-slate-800 rounded w-1/4" />
-          <div className="h-3 bg-slate-800 rounded w-1/6" />
+          <Skeleton className="h-3 w-1/4 rounded-lg" />
+          <Skeleton className="h-3 w-1/6 rounded-lg" />
         </div>
       </div>
     </div>
@@ -22,13 +23,13 @@ export const CampaignSkeleton = () => {
 
 export const StatsSkeleton = () => {
   return (
-    <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl animate-pulse space-y-3">
+    <div className="border border-border p-5 rounded-2xl space-y-3 bg-surface">
       <div className="flex justify-between items-center">
-        <div className="h-3 bg-slate-800 rounded w-1/3" />
-        <div className="h-8 bg-slate-800 rounded-xl w-8" />
+        <Skeleton className="h-3 w-1/3 rounded-lg" />
+        <Skeleton className="h-8 w-8 rounded-xl" />
       </div>
-      <div className="h-6 bg-slate-800 rounded w-2/3" />
-      <div className="h-3 bg-slate-800 rounded w-1/2" />
+      <Skeleton className="h-6 w-2/3 rounded-lg" />
+      <Skeleton className="h-3 w-1/2 rounded-lg" />
     </div>
   );
 };

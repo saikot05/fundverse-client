@@ -1,49 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useTheme as useNextTheme } from 'next-themes';
 
-type Theme = 'dark' | 'light';
+/**
+ * Thin wrapper around next-themes so the rest of the codebase keeps the same
+ * `useTheme()` / `ThemeProvider` API without changes.
+ *
+ * next-themes automatically sets:
+ *   - class="dark" | "light" on <html>
+ *   - data-theme="dark" | "light" on <html>
+ * Both of which HeroUI v3 reads.
+ */
+export function useTheme() {
+  const { theme, setTheme, resolvedTheme } = useNextTheme();
 
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.className = savedTheme;
-    } else {
-      document.documentElement.className = 'dark';
-    }
-    setMounted(true);
-  }, []);
+  const currentTheme = (resolvedTheme || theme || 'dark') as 'dark' | 'light';
 
   const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    localStorage.setItem('theme', nextTheme);
-    document.documentElement.className = nextTheme;
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
+  return { theme: currentTheme, toggleTheme };
 }

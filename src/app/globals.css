@@ -1,91 +1,81 @@
 @import "tailwindcss";
+@import "@heroui/styles";
 
+/* ───────────────────────────────────────────
+   Custom Brand Colors (oklch for HeroUI v3)
+─────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
+  --accent: oklch(0.55 0.22 264);           /* indigo-500 */
+  --accent-foreground: oklch(0.98 0 0);     /* white */
+}
+
+.dark,
+[data-theme="dark"] {
+  --accent: oklch(0.65 0.20 264);
+  --accent-foreground: oklch(0.98 0 0);
+}
+
+/* Make the color available to Tailwind */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  /* Brand violet/indigo shorthands still usable via tw classes */
+  --color-brand-from: oklch(0.55 0.25 294);   /* violet-500 */
+  --color-brand-to: oklch(0.55 0.22 264);     /* indigo-500 */
+}
+
+/* ───────────────────────────────────────────
+   Custom Scrollbar
+─────────────────────────────────────────── */
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card-bg: rgba(15, 23, 42, 0.65);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --text-muted: #94a3b8;
-  --panel-bg: #0b0f19;
+  --scrollbar-thumb: color-mix(in oklch, var(--accent) 30%, transparent);
+  --scrollbar-track: transparent;
+  --scrollbar-width: thin;
 }
 
-.light {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card-bg: rgba(255, 255, 255, 0.8);
-  --card-border: rgba(15, 23, 42, 0.08);
-  --text-muted: #475569;
-  --panel-bg: #ffffff;
-}
-
-@theme {
-  --color-slate-950: var(--background);
-  --color-slate-900: var(--panel-bg);
-  --color-slate-800: var(--card-bg);
-  --color-slate-400: var(--text-muted);
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #020617;
-}
-::-webkit-scrollbar-thumb {
-  background: #1e1b4b;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #312e81;
-}
-
-/* Premium micro-interactions */
+/* ───────────────────────────────────────────
+   Glass utility
+─────────────────────────────────────────── */
 .glass {
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--card-border);
+  background: color-mix(in oklch, var(--surface) 70%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
+/* ───────────────────────────────────────────
+   Gradient utilities
+─────────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa 0%, #6366f1 100%);
+  background: linear-gradient(135deg, oklch(0.65 0.25 294) 0%, oklch(0.55 0.22 264) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, oklch(0.50 0.28 294) 0%, oklch(0.47 0.24 264) 100%);
 }
 
 .gradient-bg-hover:hover {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, oklch(0.57 0.27 294) 0%, oklch(0.55 0.24 264) 100%);
 }
 
-/* Loader Spinners */
+/* ───────────────────────────────────────────
+   Spinner
+─────────────────────────────────────────── */
 .spinner {
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid color-mix(in oklch, var(--foreground) 10%, transparent);
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border-left-color: #6366f1;
+  border-left-color: var(--accent);
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

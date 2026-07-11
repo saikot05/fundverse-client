@@ -1,44 +1,68 @@
-import axios from 'axios';
 import { authClient } from '../lib/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-export const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+/**
+ * Custom fetch wrapper to replace Axios.
+ * Automatically handles JWT tokens and error catching.
+ */
+async function fetchApi(endpoint: string, options: RequestInit = {}) {
+  const url = `${API_URL}${endpoint}`;
+  
+  const headers = new Headers(options.headers || {});
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
 
-// Request interceptor to attach JWT token
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+  // Get JWT Token from Better Auth
+  if (typeof window !== 'undefined') {
+    try {
+      const { data } = await authClient.token();
+      if (data?.token) {
+        headers.set('Authorization', `Bearer ${data.token}`);
       }
+    } catch (e) {
+      // Ignore token fetch error
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
-);
 
-// Response interceptor to handle token expiry / unauthenticated states
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // optional redirect if needed
+  const config: RequestInit = {
+    ...options,
+    headers,
+  };
+
+  try {
+    const response = await fetch(url, config);
+    if (!response.ok) {
+      if (response.status === 401 && typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'API request failed');
     }
-    return Promise.reject(error);
+    
+    // Attempt to parse JSON, if it's empty return null
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  } catch (error) {
+    // If it's a network error or fetch fails, throw a custom error to be caught safely
+    console.error(`[API Fetch Error] ${endpoint}:`, error);
+    throw error;
   }
-);
+}
+
+// Convert params object to query string
+function buildQueryString(params?: Record<string, any>) {
+  if (!params) return '';
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : '';
+}
 
 // Auth Services
 export const authService = {
@@ -48,7 +72,7 @@ export const authService = {
       password: data.password,
       name: data.name,
       image: data.image || '',
-      role: data.role || 'supporter', // Custom field mapping
+      role: data.role || 'supporter', 
     } as any);
 
     if (res.error) {
@@ -65,10 +89,8 @@ export const authService = {
       image: responseData?.user?.image || undefined,
     };
 
-    localStorage.setItem('token', responseData?.session?.token || 'better-auth-session');
     localStorage.setItem('user', JSON.stringify(userData));
-
-    return { user: userData, token: responseData?.session?.token || 'better-auth-session' };
+    return { user: userData };
   },
 
   login: async (data: any) => {
@@ -91,10 +113,8 @@ export const authService = {
       image: responseData?.user?.image || undefined,
     };
 
-    localStorage.setItem('token', responseData?.session?.token || 'better-auth-session');
     localStorage.setItem('user', JSON.stringify(userData));
-
-    return { user: userData, token: responseData?.session?.token || 'better-auth-session' };
+    return { user: userData };
   },
 
   getCurrentUser: async () => {
@@ -121,7 +141,6 @@ export const authService = {
     if (res.error) {
       throw new Error(res.error.message || 'Logout failed.');
     }
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
   },
 };
@@ -129,151 +148,121 @@ export const authService = {
 // Campaign Services
 export const campaignService = {
   create: async (data: any) => {
-    const res = await api.post('/campaigns', data);
-    return res.data;
+    return fetchApi('/campaigns', { method: 'POST', body: JSON.stringify(data) });
   },
   getAll: async (params: { page?: number; limit?: number; search?: string; category?: string; sort?: string; status?: string }) => {
-    const res = await api.get('/campaigns', { params });
-    return res.data;
+    return fetchApi(`/campaigns${buildQueryString(params)}`, { method: 'GET' });
   },
   getAdminAll: async () => {
-    const res = await api.get('/campaigns/admin/all');
-    return res.data;
+    return fetchApi('/campaigns/admin/all', { method: 'GET' });
   },
   getMyCampaigns: async () => {
-    const res = await api.get('/campaigns/my-campaigns');
-    return res.data;
+    return fetchApi('/campaigns/my-campaigns', { method: 'GET' });
   },
   getById: async (id: string) => {
-    const res = await api.get(`/campaigns/${id}`);
-    return res.data;
+    return fetchApi(`/campaigns/${id}`, { method: 'GET' });
   },
   update: async (id: string, data: any) => {
-    const res = await api.patch(`/campaigns/${id}`, data);
-    return res.data;
+    return fetchApi(`/campaigns/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   },
   delete: async (id: string) => {
-    const res = await api.delete(`/campaigns/${id}`);
-    return res.data;
+    return fetchApi(`/campaigns/${id}`, { method: 'DELETE' });
   },
   approve: async (id: string) => {
-    const res = await api.patch(`/campaigns/${id}/approve`);
-    return res.data;
+    return fetchApi(`/campaigns/${id}/approve`, { method: 'PATCH' });
   },
   reject: async (id: string) => {
-    const res = await api.patch(`/campaigns/${id}/reject`);
-    return res.data;
+    return fetchApi(`/campaigns/${id}/reject`, { method: 'PATCH' });
   },
 };
 
 // Payment Services
 export const paymentService = {
   createPaymentIntent: async (amount: number) => {
-    const res = await api.post('/payments/create-payment-intent', { amount });
-    return res.data;
+    return fetchApi('/payments/create-payment-intent', { method: 'POST', body: JSON.stringify({ amount }) });
   },
   verifyPayment: async (paymentIntentId: string) => {
-    const res = await api.post('/payments/verify', { paymentIntentId });
-    return res.data;
+    return fetchApi('/payments/verify', { method: 'POST', body: JSON.stringify({ paymentIntentId }) });
   },
   getHistory: async () => {
-    const res = await api.get('/payments/history');
-    return res.data;
+    return fetchApi('/payments/history', { method: 'GET' });
   },
 };
 
 // Contribution Services
 export const contributionService = {
   create: async (campaignId: string, amount: number) => {
-    const res = await api.post('/contributions', { campaignId, amount });
-    return res.data;
+    return fetchApi('/contributions', { method: 'POST', body: JSON.stringify({ campaignId, amount }) });
   },
   getByCampaign: async (campaignId: string) => {
-    const res = await api.get(`/contributions/campaign/${campaignId}`);
-    return res.data;
+    return fetchApi(`/contributions/campaign/${campaignId}`, { method: 'GET' });
   },
   getMyContributions: async () => {
-    const res = await api.get('/contributions/my-contributions');
-    return res.data;
+    return fetchApi('/contributions/my-contributions', { method: 'GET' });
   },
 };
 
 // Withdrawal Services
 export const withdrawalService = {
   create: async (data: { campaignId: string; amount: number; bankDetails: any }) => {
-    const res = await api.post('/withdrawals', data);
-    return res.data;
+    return fetchApi('/withdrawals', { method: 'POST', body: JSON.stringify(data) });
   },
   getMyWithdrawals: async () => {
-    const res = await api.get('/withdrawals/my-withdrawals');
-    return res.data;
+    return fetchApi('/withdrawals/my-withdrawals', { method: 'GET' });
   },
   getAdminAll: async () => {
-    const res = await api.get('/withdrawals/admin/all');
-    return res.data;
+    return fetchApi('/withdrawals/admin/all', { method: 'GET' });
   },
   approve: async (id: string) => {
-    const res = await api.patch(`/withdrawals/${id}/approve`);
-    return res.data;
+    return fetchApi(`/withdrawals/${id}/approve`, { method: 'PATCH' });
   },
   reject: async (id: string) => {
-    const res = await api.patch(`/withdrawals/${id}/reject`);
-    return res.data;
+    return fetchApi(`/withdrawals/${id}/reject`, { method: 'PATCH' });
   },
 };
 
 // Notification Services
 export const notificationService = {
   getAll: async () => {
-    const res = await api.get('/notifications');
-    return res.data;
+    return fetchApi('/notifications', { method: 'GET' });
   },
   readAll: async () => {
-    const res = await api.patch('/notifications/read-all');
-    return res.data;
+    return fetchApi('/notifications/read-all', { method: 'PATCH' });
   },
   readSingle: async (id: string) => {
-    const res = await api.patch(`/notifications/${id}/read`);
-    return res.data;
+    return fetchApi(`/notifications/${id}/read`, { method: 'PATCH' });
   },
 };
 
 // Report Services
 export const reportService = {
   create: async (campaignId: string, reason: string) => {
-    const res = await api.post('/reports', { campaignId, reason });
-    return res.data;
+    return fetchApi('/reports', { method: 'POST', body: JSON.stringify({ campaignId, reason }) });
   },
   getAdminAll: async () => {
-    const res = await api.get('/reports/admin/all');
-    return res.data;
+    return fetchApi('/reports/admin/all', { method: 'GET' });
   },
   resolve: async (id: string) => {
-    const res = await api.patch(`/reports/${id}/resolve`);
-    return res.data;
+    return fetchApi(`/reports/${id}/resolve`, { method: 'PATCH' });
   },
 };
 
 // Stats Services
 export const statsService = {
   getCreatorStats: async () => {
-    const res = await api.get('/stats/creator');
-    return res.data;
+    return fetchApi('/stats/creator', { method: 'GET' });
   },
   getAdminStats: async () => {
-    const res = await api.get('/stats/admin');
-    return res.data;
+    return fetchApi('/stats/admin', { method: 'GET' });
   },
 };
 
 // User Admin Services
 export const userAdminService = {
   getAll: async () => {
-    const res = await api.get('/users/admin/users');
-    return res.data;
+    return fetchApi('/users/admin/users', { method: 'GET' });
   },
   updateRole: async (id: string, role: string) => {
-    const res = await api.patch(`/users/admin/users/${id}/role`, { role });
-    return res.data;
+    return fetchApi(`/users/admin/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) });
   },
 };

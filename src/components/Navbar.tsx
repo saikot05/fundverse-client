@@ -41,9 +41,11 @@ export default function Navbar() {
       const fetchNotifications = async () => {
         try {
           const data = await notificationService.getAll();
-          setNotifications(data.notifications || []);
+          if (data && data.notifications) {
+            setNotifications(data.notifications);
+          }
         } catch (err) {
-          console.error('Failed to load notifications:', err);
+          // Silently ignore network errors during polling
         }
       };
 

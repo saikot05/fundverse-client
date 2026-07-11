@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
+import { jwt } from 'better-auth/plugins';
 
 const mongoUri = process.env.MONGODB_URI as string;
 const client = new MongoClient(mongoUri);
@@ -58,4 +59,7 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [
+    jwt(),
+  ],
 });

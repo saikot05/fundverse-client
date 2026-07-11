@@ -22,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-slate-950 text-white scroll-smooth">
-      <body className={`${inter.className} min-h-screen flex flex-col bg-slate-950 text-white`}>
+    // suppressHydrationWarning is required by next-themes to avoid SSR mismatch
+    <html lang="en" className="h-full scroll-smooth" suppressHydrationWarning>
+      {/* bg-background and text-foreground come from HeroUI's CSS variables */}
+      <body className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground`}>
         <ClientProviders>
           <Navbar />
           <main className="flex-grow flex flex-col">{children}</main>

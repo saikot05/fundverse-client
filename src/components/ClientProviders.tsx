@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from '../hooks/useAuth';
-import { ThemeProvider } from '../hooks/useTheme';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -13,7 +13,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
           queries: {
             refetchOnWindowFocus: false,
             retry: 1,
-            staleTime: 5 * 60 * 1000, // 5 minutes
+            staleTime: 5 * 60 * 1000,
           },
         },
       })
@@ -21,7 +21,9 @@ export default function ClientProviders({ children }: { children: React.ReactNod
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+      {/* next-themes sets class="dark|light" AND data-theme="dark|light" on <html>
+          HeroUI v3 reads both automatically. */}
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <AuthProvider>{children}</AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

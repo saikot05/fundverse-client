@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { campaignService } from '../../../../../services/api';
-import axios from 'axios';
+
 import {
   Sparkles,
   ArrowLeft,
@@ -112,10 +112,13 @@ export default function EditCampaignPage() {
     }
 
     try {
-      const res = await axios.post(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, formData);
-      if (res.data.success) {
-        const url = res.data.data.url;
-        setValue('image', url);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+        method: 'POST',
+        body: formData,
+      });
+      const resData = await res.json();
+      if (resData.success) {
+        setValue('image', resData.data.url);
       } else {
         throw new Error('imgBB upload failed.');
       }
