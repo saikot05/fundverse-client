@@ -18,10 +18,14 @@ import {
   LayoutDashboard,
   Shield,
   Megaphone,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
 
 export default function Navbar() {
   const { user, logout, refreshUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -123,6 +127,19 @@ export default function Navbar() {
 
           {/* Right Action Menu */}
           <div className="hidden md:flex items-center gap-4">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5 rounded-xl transition cursor-pointer"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-amber-400" />
+              ) : (
+                <Moon className="h-5 w-5 text-indigo-400" />
+              )}
+            </button>
+
             {user ? (
               <>
                 {/* Credit balance display */}
@@ -278,6 +295,19 @@ export default function Navbar() {
 
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center gap-2">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 text-slate-400 hover:text-indigo-400 rounded-lg transition"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-amber-400" />
+              ) : (
+                <Moon className="h-5 w-5 text-indigo-400" />
+              )}
+            </button>
+
             {user && (
               <div className="flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-300">
                 <Coins className="h-3.5 w-3.5 text-amber-400" />

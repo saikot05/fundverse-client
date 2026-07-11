@@ -2,9 +2,7 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
 
-const mongoUri =
-  process.env.MONGODB_URI ||
-  'mongodb+srv://fundverse_db:zMlCoiPe4P6HmHLX@cluster0.yhupfzi.mongodb.net/?appName=Cluster0';
+const mongoUri = process.env.MONGODB_URI as string;
 const client = new MongoClient(mongoUri);
 const db = client.db();
 
@@ -12,7 +10,7 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
-  secret: process.env.BETTER_AUTH_SECRET || '1vEa0BiPcGyP6wWipeXbGQCMj2YZfBNM',
+  secret: process.env.BETTER_AUTH_SECRET ,
   user: {
     modelName: 'users',
     additionalFields: {
