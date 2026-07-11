@@ -31,4 +31,18 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'mock-google-client-secret',
     },
   },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              credits: user.role === 'creator' ? 20 : 50,
+            },
+          };
+        },
+      },
+    },
+  },
 });

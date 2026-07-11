@@ -28,13 +28,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/campaigns?category=Tech" className="hover:text-indigo-400 transition-colors">
-                  Tech Projects
+                <Link href="/about" className="hover:text-indigo-400 transition-colors">
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link href="/campaigns?category=Creative" className="hover:text-indigo-400 transition-colors">
-                  Creative Arts
+                <Link href="/contact" className="hover:text-indigo-400 transition-colors">
+                  Contact Support
                 </Link>
               </li>
             </ul>
