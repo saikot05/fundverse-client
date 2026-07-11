@@ -100,8 +100,12 @@ export default function AddCampaignPage() {
 
     try {
       const res = await axios.post(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, formData);
-      const url = res.data.data.url;
-      setValue('image', url);
+      if (res.data.success) {
+        const url = res.data.data.url;
+        setValue('image', url);
+      } else {
+        throw new Error('imgBB upload failed.');
+      }
     } catch (err: any) {
       setError('Image upload to imgBB failed. Using a fallback seed image instead.');
       // Set a nice random unsplash link
