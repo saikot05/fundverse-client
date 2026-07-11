@@ -113,8 +113,12 @@ export default function EditCampaignPage() {
 
     try {
       const res = await axios.post(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, formData);
-      const url = res.data.data.url;
-      setValue('image', url);
+      if (res.data.success) {
+        const url = res.data.data.url;
+        setValue('image', url);
+      } else {
+        throw new Error('imgBB upload failed.');
+      }
     } catch (err: any) {
       setError('Image upload failed. Using fallback seed image.');
       setValue('image', 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600');
