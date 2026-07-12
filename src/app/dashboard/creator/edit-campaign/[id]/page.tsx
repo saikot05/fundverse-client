@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { campaignService } from '../../../../../services/api';
+import { campaignService } from '../../../../../lib/api';
 
 import {
   Sparkles,

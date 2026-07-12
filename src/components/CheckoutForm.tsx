@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { paymentService } from '../services/api';
+import { paymentService } from '../lib/api';
 import { CreditCard, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface CheckoutFormProps {

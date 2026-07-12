@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { campaignService, withdrawalService, statsService } from '../../../services/api';
+import { campaignService, withdrawalService, statsService } from '../../../lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {

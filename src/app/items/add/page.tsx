@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { campaignService } from '../../../../lib/api';
+import { campaignService } from '../../../lib/api';
+import { useAuth } from '../../../hooks/useAuth';
+import Link from 'next/link';
 
 import {
   Sparkles,
@@ -14,28 +16,27 @@ import {
   Upload,
   Calendar,
   DollarSign,
-  AlertCircle,
   FileText,
   Bookmark,
 } from 'lucide-react';
-import Link from 'next/link';
 
-const campaignSchema = z.z.object({
-  title: z.z.string().min(5, 'Title must be at least 5 characters'),
-  shortDescription: z.z.string().min(10, 'Short description must be at least 10 characters'),
-  description: z.z.string().min(20, 'Full description must be at least 20 characters'),
-  category: z.z.enum(['Tech', 'Creative', 'Community', 'Charity', 'Gaming']),
-  targetAmount: z.z.number().min(10, 'Target amount must be at least 10 credits'),
-  image: z.z.string().min(1, 'Image is required'),
-  deadline: z.z.string().refine((val) => new Date(val) > new Date(), {
+const campaignSchema = z.object({
+  title: z.string().min(5, 'Title must be at least 5 characters'),
+  shortDescription: z.string().min(10, 'Short description must be at least 10 characters'),
+  description: z.string().min(20, 'Full description must be at least 20 characters'),
+  category: z.enum(['Tech', 'Creative', 'Community', 'Charity', 'Gaming']),
+  targetAmount: z.number().min(10, 'Target amount must be at least 10 credits'),
+  image: z.string().min(1, 'Image is required'),
+  deadline: z.string().refine((val) => new Date(val) > new Date(), {
     message: 'Deadline must be a date in the future',
   }),
 });
 
-type CampaignFormValues = z.z.infer<typeof campaignSchema>;
+type CampaignFormValues = z.infer<typeof campaignSchema>;
 
-export default function AddCampaignPage() {
+export default function ItemsAddPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
@@ -56,20 +57,25 @@ export default function AddCampaignPage() {
 
   const campaignImage = watch('image');
 
-  // Launch campaign mutation
+  // Protect page
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
   const launchMutation = useMutation({
     mutationFn: campaignService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-campaigns'] });
       queryClient.invalidateQueries({ queryKey: ['creator-stats'] });
-      router.push('/dashboard/creator');
+      router.push('/items/manage');
     },
     onError: (err: any) => {
       setError(err.response?.data?.message || 'Failed to create campaign. Please try again.');
     },
   });
 
-  // Handle local file upload and simulate imgBB upload
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,9 +89,7 @@ export default function AddCampaignPage() {
     const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY || 'mock_imgbb_key';
 
     if (imgbbKey === 'mock_imgbb_key') {
-      // Simulate file upload delay
       setTimeout(() => {
-        // Return a mock creative placeholder image from Unsplash
         const mockUrls = [
           'https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=600',
           'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600',
@@ -110,8 +114,7 @@ export default function AddCampaignPage() {
         throw new Error('imgBB upload failed.');
       }
     } catch (err: any) {
-      setError('Image upload to imgBB failed. Using a fallback seed image instead.');
-      // Set a nice random unsplash link
+      setError('Image upload failed. Using a fallback mockup image instead.');
       setValue('image', 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600');
     } finally {
       setUploadingImage(false);
@@ -123,34 +126,42 @@ export default function AddCampaignPage() {
     launchMutation.mutate(values);
   };
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="spinner" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   return (
-    <div className="flex-1 bg-slate-950 p-6 sm:p-10 text-white max-w-3xl mx-auto w-full">
-      {/* Back button */}
+    <div className="flex-1 p-6 sm:p-10 text-slate-800 dark:text-slate-200 max-w-3xl mx-auto w-full transition-colors duration-300">
       <Link
-        href="/dashboard/creator"
-        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white mb-6 transition"
+        href="/items/manage"
+        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white mb-6 transition"
       >
         <ArrowLeft className="h-4 w-4" />
-        <span>Back to Dashboard</span>
+        <span>Back to Manage</span>
       </Link>
 
-      <div className="glass p-8 rounded-2xl relative overflow-hidden">
-        <h2 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-indigo-400" />
-          <span>Launch a New Campaign</span>
+      <div className="glass p-8 rounded-2xl relative overflow-hidden bg-white/80 dark:bg-slate-950/80 border border-slate-200 dark:border-white/10">
+        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <Sparkles className="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
+          <span>Add New Campaign Item</span>
         </h2>
 
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm px-4 py-3 rounded-lg mb-6">
+          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Campaign Title
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
+              Item Title
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
@@ -160,17 +171,15 @@ export default function AddCampaignPage() {
                 type="text"
                 {...register('title')}
                 placeholder="e.g. NextGen Autonomous Drone"
-                className="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
               />
             </div>
-            {errors.title && <p className="text-xs text-rose-400 mt-1">{errors.title.message}</p>}
+            {errors.title && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.title.message}</p>}
           </div>
 
-          {/* Grid target/deadline */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Category */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
                 Category
               </label>
               <div className="relative">
@@ -179,7 +188,7 @@ export default function AddCampaignPage() {
                 </span>
                 <select
                   {...register('category')}
-                  className="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 transition"
                 >
                   <option value="Tech">Technology</option>
                   <option value="Creative">Creative Arts</option>
@@ -188,12 +197,11 @@ export default function AddCampaignPage() {
                   <option value="Gaming">Gaming / Design</option>
                 </select>
               </div>
-              {errors.category && <p className="text-xs text-rose-400 mt-1">{errors.category.message}</p>}
+              {errors.category && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.category.message}</p>}
             </div>
 
-            {/* Target Amount */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
                 Target Funding Goal (Credits)
               </label>
               <div className="relative">
@@ -204,67 +212,63 @@ export default function AddCampaignPage() {
                   type="number"
                   placeholder="1000"
                   {...register('targetAmount', { valueAsNumber: true })}
-                  className="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 transition"
                 />
               </div>
-              {errors.targetAmount && <p className="text-xs text-rose-400 mt-1">{errors.targetAmount.message}</p>}
+              {errors.targetAmount && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.targetAmount.message}</p>}
             </div>
           </div>
 
-          {/* Short description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Short Summary Description
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
+              Short Description
             </label>
             <input
               type="text"
               {...register('shortDescription')}
               placeholder="e.g. A revolutionary drone project featuring carbon-fiber builds."
-              className="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-800 dark:text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
             />
             {errors.shortDescription && (
-              <p className="text-xs text-rose-400 mt-1">{errors.shortDescription.message}</p>
+              <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.shortDescription.message}</p>
             )}
           </div>
 
-          {/* Full description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Full Campaign Pitch Detail
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
+              Full Campaign Pitch Description
             </label>
             <textarea
               rows={5}
               {...register('description')}
               placeholder="Provide a comprehensive pitch, budget breakdown, team details, and shipping timelines..."
-              className="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 px-4 text-sm text-slate-800 dark:text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
             />
-            {errors.description && <p className="text-xs text-rose-400 mt-1">{errors.description.message}</p>}
+            {errors.description && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.description.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Image */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
                 Campaign Image Banner
               </label>
               <div className="flex gap-4 items-center">
-                <label className="flex items-center gap-2 bg-slate-900 border border-white/10 hover:bg-slate-800 text-slate-300 text-xs px-4 py-2.5 rounded-xl cursor-pointer transition">
+                <label className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl cursor-pointer transition">
                   <Upload className="h-4 w-4" />
                   <span>{uploadingImage ? 'Uploading...' : 'Choose File'}</span>
                   <input type="file" onChange={handleImageFileChange} className="hidden" accept="image/*" />
                 </label>
                 {campaignImage && (
-                  <img src={campaignImage} alt="Preview" className="h-10 w-16 object-cover rounded-lg border border-white/10" />
+                  <img src={campaignImage} alt="Preview" className="h-10 w-16 object-cover rounded-lg border border-slate-200 dark:border-white/10" />
                 )}
               </div>
               <input type="hidden" {...register('image')} />
-              {errors.image && <p className="text-xs text-rose-400 mt-1">{errors.image.message}</p>}
+              {errors.image && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.image.message}</p>}
             </div>
 
-            {/* Deadline */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Campaign Deadline Date
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-2">
+                Deadline Date
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
@@ -273,10 +277,10 @@ export default function AddCampaignPage() {
                 <input
                   type="date"
                   {...register('deadline')}
-                  className="w-full bg-slate-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 transition"
                 />
               </div>
-              {errors.deadline && <p className="text-xs text-rose-400 mt-1">{errors.deadline.message}</p>}
+              {errors.deadline && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">{errors.deadline.message}</p>}
             </div>
           </div>
 
@@ -285,7 +289,7 @@ export default function AddCampaignPage() {
             disabled={launchMutation.isPending || uploadingImage}
             className="w-full py-3 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white font-semibold text-sm rounded-xl cursor-pointer disabled:opacity-50 transition"
           >
-            {launchMutation.isPending ? 'Submitting Campaign...' : 'Launch Campaign'}
+            {launchMutation.isPending ? 'Submitting Item...' : 'Submit Item'}
           </button>
         </form>
       </div>

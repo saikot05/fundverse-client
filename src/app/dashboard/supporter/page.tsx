@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { paymentService, contributionService } from '../../../services/api';
+import { paymentService, contributionService } from '../../../lib/api';
 import CheckoutForm from '../../../components/CheckoutForm';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';

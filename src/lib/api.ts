@@ -1,6 +1,6 @@
-import { authClient } from '../lib/auth-client';
+import { authClient } from './auth-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = '/api/backend';
 
 /**
  * Custom fetch wrapper to replace Axios.
@@ -150,7 +150,7 @@ export const campaignService = {
   create: async (data: any) => {
     return fetchApi('/campaigns', { method: 'POST', body: JSON.stringify(data) });
   },
-  getAll: async (params: { page?: number; limit?: number; search?: string; category?: string; sort?: string; status?: string }) => {
+  getAll: async (params: { page?: number; limit?: number; search?: string; category?: string; sort?: string; status?: string; goalRange?: string }) => {
     return fetchApi(`/campaigns${buildQueryString(params)}`, { method: 'GET' });
   },
   getAdminAll: async () => {

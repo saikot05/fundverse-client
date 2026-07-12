@@ -9,7 +9,7 @@ import {
   reportService,
   userAdminService,
   statsService,
-} from '../../../services/api';
+} from '../../../lib/api';
 import {
   ShieldAlert,
   Users,
