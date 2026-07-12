@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:5000/api';
+const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:5000';
 
 /**
  * Next.js 16 Proxy Middleware.
@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith('/api/backend/')) {
     const path = pathname.replace('/api/backend/', '');
     const search = request.nextUrl.search;
-    const url = `${BACKEND_URL}/${path}${search}`;
+    const url = `${BACKEND_URL}/api/${path}${search}`;
     return forwardRequest(request, url);
   }
 
