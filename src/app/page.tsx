@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { campaignService } from '../lib/api';
 import CampaignCard from '../components/CampaignCard';
+import { AnimateSection, StaggerList, StaggerItem } from '../lib/animations';
 import {
   Sparkles,
   TrendingUp,
@@ -100,20 +102,43 @@ export default function HomePage() {
         {/* Content Container */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
           <div className="max-w-2xl space-y-6">
-            <span className="inline-flex items-center gap-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            <motion.span
+              key={heroIndex + '-badge'}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+            >
               <Sparkles className="h-3.5 w-3.5" />
               <span>Project Category: {heroSlides[heroIndex].category}</span>
-            </span>
+            </motion.span>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white">
+            <motion.h1
+              key={heroIndex + '-title'}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white"
+            >
               {heroSlides[heroIndex].title}
-            </h1>
+            </motion.h1>
 
-            <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg leading-relaxed max-w-lg">
+            <motion.p
+              key={heroIndex + '-desc'}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.16 }}
+              className="text-slate-500 dark:text-slate-400 text-base sm:text-lg leading-relaxed max-w-lg"
+            >
               {heroSlides[heroIndex].desc}
-            </p>
+            </motion.p>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.24 }}
+              className="flex flex-wrap items-center gap-4"
+            >
               <Link
                 href="/campaigns"
                 className="rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 px-6 py-3 font-semibold text-sm shadow-lg shadow-indigo-500/20 text-white transition-all duration-200 flex items-center gap-2"
@@ -127,7 +152,7 @@ export default function HomePage() {
               >
                 Launch Idea
               </Link>
-            </div>
+            </motion.div>
           </div>
 
           {/* Slide Indicator Controls */}
@@ -147,84 +172,74 @@ export default function HomePage() {
 
       {/* Trust & Stats Section */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass p-6 rounded-2xl flex items-center gap-4">
-            <div className="p-3.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-600 dark:text-indigo-400">
-              <Users className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">45,000+ Backers</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Supporting global innovative ideas</p>
-            </div>
-          </div>
+        <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StaggerItem>
+            <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.25 }} className="glass p-6 rounded-2xl flex items-center gap-4">
+              <div className="p-3.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-600 dark:text-indigo-400">
+                <Users className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">45,000+ Backers</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Supporting global innovative ideas</p>
+              </div>
+            </motion.div>
+          </StaggerItem>
 
-          <div className="glass p-6 rounded-2xl flex items-center gap-4">
-            <div className="p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-600 dark:text-violet-400">
-              <TrendingUp className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">2.4M Credits Pledged</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Securing next-generation projects</p>
-            </div>
-          </div>
+          <StaggerItem>
+            <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.25 }} className="glass p-6 rounded-2xl flex items-center gap-4">
+              <div className="p-3.5 bg-violet-500/10 border border-violet-500/20 rounded-xl text-violet-600 dark:text-violet-400">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">2.4M Credits Pledged</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Securing next-generation projects</p>
+              </div>
+            </motion.div>
+          </StaggerItem>
 
-          <div className="glass p-6 rounded-2xl flex items-center gap-4">
-            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">99.2% Payout Success</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Escrow and bank withdrawal approvals</p>
-            </div>
-          </div>
-        </div>
+          <StaggerItem>
+            <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.25 }} className="glass p-6 rounded-2xl flex items-center gap-4">
+              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">99.2% Payout Success</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Escrow and bank withdrawal approvals</p>
+              </div>
+            </motion.div>
+          </StaggerItem>
+        </StaggerList>
       </section>
 
       {/* 7th Section: Why Choose FundVerse */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-200 dark:border-white/5">
-        <div className="text-center max-w-xl mx-auto space-y-2 mb-12">
+        <AnimateSection className="text-center max-w-xl mx-auto space-y-2 mb-12">
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Why FundVerse?</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">Experience next-generation decentralized support and transparent campaign tracking</p>
-        </div>
+        </AnimateSection>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass p-6 rounded-2xl space-y-3">
-            <div className="h-10 w-10 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
-              01
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Secure Escrow</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Credits pledged are securely held in escrow until milestones are reached.
-            </p>
-          </div>
-          <div className="glass p-6 rounded-2xl space-y-3">
-            <div className="h-10 w-10 rounded-lg bg-violet-500/10 text-violet-500 flex items-center justify-center font-bold">
-              02
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Stripe Card Integration</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Easily buy digital credits inside your dashboard using standard credit card systems.
-            </p>
-          </div>
-          <div className="glass p-6 rounded-2xl space-y-3">
-            <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
-              03
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Zero Extra Fees</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Pledging credits does not incur additional hidden network processing fees.
-            </p>
-          </div>
-          <div className="glass p-6 rounded-2xl space-y-3">
-            <div className="h-10 w-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
-              04
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Verified Creators</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              All launching campaign pitches are strictly reviewed and monitored by admins.
-            </p>
-          </div>
-        </div>
+        <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { num: '01', color: 'indigo', title: 'Secure Escrow', desc: 'Credits pledged are securely held in escrow until milestones are reached.' },
+            { num: '02', color: 'violet', title: 'Stripe Card Integration', desc: 'Easily buy digital credits inside your dashboard using standard credit card systems.' },
+            { num: '03', color: 'emerald', title: 'Zero Extra Fees', desc: 'Pledging credits does not incur additional hidden network processing fees.' },
+            { num: '04', color: 'amber', title: 'Verified Creators', desc: 'All launching campaign pitches are strictly reviewed and monitored by admins.' },
+          ].map((f) => (
+            <StaggerItem key={f.num}>
+              <motion.div
+                whileHover={{ y: -5, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+                className="glass p-6 rounded-2xl space-y-3 h-full"
+              >
+                <div className={`h-10 w-10 rounded-lg bg-${f.color}-500/10 text-${f.color}-500 flex items-center justify-center font-bold`}>
+                  {f.num}
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{f.title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+              </motion.div>
+            </StaggerItem>
+          ))}
+        </StaggerList>
       </section>
 
       {/* Featured campaigns Section */}
@@ -248,8 +263,8 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {campaigns.map((camp: any) => (
-              <CampaignCard key={camp._id} campaign={camp} />
+            {campaigns.map((camp: any, i: number) => (
+              <CampaignCard key={camp._id} campaign={camp} index={i} />
             ))}
           </div>
         )}
@@ -257,63 +272,84 @@ export default function HomePage() {
 
       {/* Testimonials */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-200 dark:border-white/5">
-        <div className="text-center max-w-xl mx-auto space-y-2 mb-12">
+        <AnimateSection className="text-center max-w-xl mx-auto space-y-2 mb-12">
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Success Stories</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">Hear from our community of creators and supporters</p>
-        </div>
+        </AnimateSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StaggerList className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map((t, idx) => (
-            <div key={idx} className="glass p-6 rounded-2xl flex flex-col justify-between space-y-4">
-              <p className="text-xs italic text-slate-600 dark:text-slate-300 leading-relaxed">"{t.quote}"</p>
-              <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100 dark:border-white/5">
-                <img src={t.avatar} alt={t.name} className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10" />
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{t.name}</h4>
-                  <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.role}</p>
+            <StaggerItem key={idx}>
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.25 }}
+                className="glass p-6 rounded-2xl flex flex-col justify-between space-y-4 h-full"
+              >
+                <p className="text-xs italic text-slate-600 dark:text-slate-300 leading-relaxed">"{t.quote}"</p>
+                <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100 dark:border-white/5">
+                  <img src={t.avatar} alt={t.name} className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10" />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{t.name}</h4>
+                    <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.role}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       </section>
 
       {/* Accordion FAQ Section */}
       <section className="mx-auto max-w-3xl px-4 py-16 border-t border-slate-200 dark:border-white/5">
-        <div className="text-center space-y-2 mb-10">
+        <AnimateSection className="text-center space-y-2 mb-10">
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center justify-center gap-1.5">
             <Award className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
             <span>Frequently Asked Questions</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">Got questions? We have answers.</p>
-        </div>
+        </AnimateSection>
 
-        <div className="space-y-3">
+        <StaggerList className="space-y-3">
           {faqs.map((faq, idx) => (
-            <div key={idx} className="glass rounded-xl overflow-hidden transition-colors">
-              <button
-                onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                className="w-full flex items-center justify-between p-4 font-semibold text-sm text-left text-slate-800 dark:text-slate-200 hover:text-indigo-500 dark:hover:text-indigo-400 transition"
-              >
-                <span>{faq.q}</span>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-500 transition-transform duration-300 ${
-                    activeFaq === idx ? 'transform rotate-180 text-indigo-500 dark:text-indigo-400' : ''
-                  }`}
-                />
-              </button>
-              {activeFaq === idx && (
-                <div className="p-4 pt-0 text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-200 dark:border-white/5 mt-2 bg-slate-50/50 dark:bg-slate-900/10">
-                  {faq.a}
-                </div>
-              )}
-            </div>
+            <StaggerItem key={idx}>
+              <div className="glass rounded-xl overflow-hidden transition-colors">
+                <button
+                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                  className="w-full flex items-center justify-between p-4 font-semibold text-sm text-left text-slate-800 dark:text-slate-200 hover:text-indigo-500 dark:hover:text-indigo-400 transition"
+                >
+                  <span>{faq.q}</span>
+                  <motion.span
+                    animate={{ rotate: activeFaq === idx ? 180 : 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="text-slate-500"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </motion.span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {activeFaq === idx && (
+                    <motion.div
+                      key="content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 pt-0 text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-200 dark:border-white/5 mt-2 bg-slate-50/50 dark:bg-slate-900/10">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       </section>
 
       {/* CTA Box */}
-      <section className="mx-auto max-w-5xl px-4 py-10">
+      <AnimateSection variant="scaleIn" className="mx-auto max-w-5xl px-4 py-10">
         <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-8 sm:p-12 rounded-3xl text-center space-y-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-500/15 to-transparent z-0 pointer-events-none" />
           <h2 className="text-3xl font-extrabold text-white tracking-tight relative z-10">
@@ -323,16 +359,18 @@ export default function HomePage() {
             Sign up now to browse campaigns, buy credits, or start mapping out your crowdfunding proposal.
           </p>
           <div className="pt-2 relative z-10">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-indigo-600 font-bold px-6 py-3 rounded-xl text-sm shadow transition cursor-pointer"
-            >
-              <span>Get Started Now</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} transition={{ duration: 0.2 }} className="inline-block">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-indigo-600 font-bold px-6 py-3 rounded-xl text-sm shadow transition cursor-pointer"
+              >
+                <span>Get Started Now</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </AnimateSection>
     </div>
   );
 }
