@@ -1,201 +1,263 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import React, { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 import { paymentService } from '../lib/api';
-import { CreditCard, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Sparkles, CreditCard, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-interface CheckoutFormProps {
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+);
+
+// ─── Inner Form (must be inside <Elements>) ────────────────────────────────
+function PaymentForm({
+  credits,
+  amount,
+  onSuccess,
+  onCancel,
+}: {
+  credits: number;
   amount: number;
-  onSuccess: (credits: number) => void;
+  onSuccess: () => void;
   onCancel: () => void;
-}
-
-export default function CheckoutForm({ amount, onSuccess, onCancel }: CheckoutFormProps) {
+}) {
   const stripe = useStripe();
   const elements = useElements();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [method, setMethod] = useState<'stripe' | 'mock'>('mock');
+  const [success, setSuccess] = useState(false);
 
-  const handleStripeSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
 
-    setError(null);
     setLoading(true);
+    setError(null);
+
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setError(submitError.message || 'Validation failed.');
+      setLoading(false);
+      return;
+    }
 
     try {
-      // 1. Create payment intent
-      const { clientSecret, paymentIntentId } = await paymentService.createPaymentIntent(amount);
+      // Create PaymentIntent on server
+      const data = await paymentService.createCheckoutSession(amount, credits);
 
-      // 2. Confirm card payment
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
-        setError('Card input element not found.');
-        setLoading(false);
-        return;
-      }
-
-      const { paymentIntent, error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
+      // Confirm payment client-side
+      const { error: confirmError } = await stripe.confirmPayment({
+        elements,
+        clientSecret: data.clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/payment/complete?session_id=${data.sessionId}`,
         },
+        // Don't redirect — handle success inline for better UX
+        redirect: 'if_required',
       });
 
-      if (stripeError) {
-        setError(stripeError.message || 'Stripe transaction failed.');
-        setLoading(false);
-        return;
-      }
-
-      if (paymentIntent?.status === 'succeeded') {
-        // 3. Verify payment with backend
-        const res = await paymentService.verifyPayment(paymentIntentId);
-        setSuccessMsg('Payment processed successfully via Stripe!');
-        setTimeout(() => {
-          onSuccess(res.credits);
-        }, 1500);
+      if (confirmError) {
+        setError(confirmError.message || 'Payment failed.');
+      } else {
+        // Payment succeeded — verify and award credits
+        await paymentService.getSessionStatus(data.sessionId);
+        setSuccess(true);
+        setTimeout(() => onSuccess(), 1800);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Payment confirmation failed.');
+      setError(err?.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMockSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      // Create and instantly verify mock payment
-      const { paymentIntentId } = await paymentService.createPaymentIntent(amount);
-      
-      // Simulate success on server via custom verify
-      const res = await paymentService.verifyPayment(paymentIntentId);
-      setSuccessMsg(`Mock Payment succeeded! Recieved ${amount} credits.`);
-      setTimeout(() => {
-        onSuccess(res.credits);
-      }, 1500);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Mock transaction failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (success) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 space-y-4 text-center">
+        <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+          <CheckCircle className="h-8 w-8 text-emerald-400" />
+        </div>
+        <div>
+          <p className="text-white font-bold text-lg">Payment Successful!</p>
+          <p className="text-slate-400 text-sm mt-1">{credits} credits added to your wallet.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl max-w-md w-full relative">
-      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-indigo-400" />
-        <span>Purchase Credits</span>
-      </h3>
-      <p className="text-sm text-slate-400 mb-6">
-        You are purchasing <strong className="text-white">{amount} credits</strong> for{' '}
-        <strong className="text-white">${amount}.00 USD</strong>.
-      </p>
-
-      {/* Tabs */}
-      <div className="flex border-b border-white/5 mb-6">
-        <button
-          onClick={() => setMethod('mock')}
-          className={`flex-1 pb-2 text-sm font-semibold transition ${
-            method === 'mock' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-slate-500 hover:text-slate-300'
-          }`}
-        >
-          Mock Checkout (Fast Test)
-        </button>
-        <button
-          onClick={() => setMethod('stripe')}
-          className={`flex-1 pb-2 text-sm font-semibold transition ${
-            method === 'stripe' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-slate-500 hover:text-slate-300'
-          }`}
-        >
-          Stripe Payment
-        </button>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="bg-slate-900/60 border border-white/10 rounded-xl p-4">
+        <PaymentElement
+          options={{
+            layout: 'tabs',
+          }}
+        />
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3 rounded-lg mb-4">
-          <AlertCircle className="h-4 w-4 shrink-0" />
+        <div className="flex items-start gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3 rounded-lg">
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
-      {successMsg && (
-        <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3 rounded-lg mb-4">
-          <CheckCircle className="h-4 w-4 shrink-0" />
-          <span>{successMsg}</span>
-        </div>
-      )}
-
-      {method === 'stripe' ? (
-        <form onSubmit={handleStripeSubmit} className="space-y-6">
-          <div className="bg-slate-950 p-4 border border-white/10 rounded-xl">
-            <CardElement
-              options={{
-                style: {
-                  base: {
-                    fontSize: '14px',
-                    color: '#ffffff',
-                    '::placeholder': {
-                      color: '#64748b',
-                    },
-                  },
-                  invalid: {
-                    color: '#f43f5e',
-                  },
-                },
-              }}
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 py-2.5 text-sm font-semibold text-slate-400 border border-white/10 rounded-xl hover:bg-white/5 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !stripe}
-              className="flex-1 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/10"
-            >
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={loading}
+          className="flex-1 py-2.5 text-sm font-semibold text-slate-400 border border-white/10 rounded-xl hover:bg-white/5 transition disabled:opacity-40"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading || !stripe}
+          className="flex-1 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 transition"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Processing…</span>
+            </>
+          ) : (
+            <>
               <CreditCard className="h-4 w-4" />
-              <span>{loading ? 'Processing...' : 'Pay with Stripe'}</span>
-            </button>
-          </div>
-        </form>
-      ) : (
-        <form onSubmit={handleMockSubmit} className="space-y-6">
-          <p className="text-xs text-slate-500 leading-relaxed">
-            For rapid evaluation of the contribution and role workflow, click below to bypass real payment confirmation. The system will instantly reward {amount} credits to your account.
-          </p>
+              <span>Pay ${amount}.00</span>
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 py-2.5 text-sm font-semibold text-slate-400 border border-white/10 rounded-xl hover:bg-white/5 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 disabled:opacity-50 text-white font-semibold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-            >
-              <Sparkles className="h-4 w-4" />
-              <span>{loading ? 'Processing...' : 'Instant Checkout'}</span>
-            </button>
+// ─── Modal Wrapper ─────────────────────────────────────────────────────────
+interface CheckoutFormProps {
+  amount: number;
+  credits: number;
+  onCancel: () => void;
+  onSuccess?: () => void;
+}
+
+export default function CheckoutForm({
+  amount,
+  credits,
+  onCancel,
+  onSuccess,
+}: CheckoutFormProps) {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    paymentService
+      .createCheckoutSession(amount, credits)
+      .then((data: any) => {
+        setClientSecret(data.clientSecret);
+        setSessionId(data.sessionId);
+      })
+      .catch((err: any) => {
+        setInitError(err?.message || 'Failed to initialize payment.');
+      });
+  }, [amount, credits]);
+
+  const handleSuccess = async () => {
+    // Award credits via session status check
+    if (sessionId) {
+      try {
+        await paymentService.getSessionStatus(sessionId);
+      } catch (_) {}
+    }
+    onSuccess?.();
+    onCancel();
+  };
+
+  const appearance = {
+    theme: 'night' as const,
+    variables: {
+      colorPrimary: '#6366f1',
+      colorBackground: '#0f172a',
+      colorText: '#f1f5f9',
+      colorDanger: '#f43f5e',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      borderRadius: '10px',
+    },
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-slate-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="h-5 w-5 text-indigo-400" />
+            <div>
+              <h3 className="text-sm font-bold text-white">Purchase Credits</h3>
+              <p className="text-xs text-slate-400">
+                {credits} credits &nbsp;·&nbsp;{' '}
+                <span className="text-indigo-400 font-medium">${amount}.00 USD</span>
+              </p>
+            </div>
           </div>
-        </form>
-      )}
+          <button
+            onClick={onCancel}
+            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          {/* Init Error */}
+          {initError && (
+            <div className="flex items-start gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3 rounded-lg mb-4">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{initError}</span>
+            </div>
+          )}
+
+          {/* Loading skeleton */}
+          {!clientSecret && !initError && (
+            <div className="space-y-3 py-2">
+              <div className="h-10 bg-slate-800 animate-pulse rounded-xl" />
+              <div className="h-28 bg-slate-800 animate-pulse rounded-xl" />
+              <div className="h-10 bg-slate-800 animate-pulse rounded-xl" />
+            </div>
+          )}
+
+          {/* Stripe Payment Element */}
+          {clientSecret && (
+            <Elements
+              stripe={stripePromise}
+              options={{ clientSecret, appearance }}
+            >
+              <PaymentForm
+                amount={amount}
+                credits={credits}
+                onSuccess={handleSuccess}
+                onCancel={onCancel}
+              />
+            </Elements>
+          )}
+        </div>
+
+        {/* Test card hint */}
+        <div className="px-6 pb-4">
+          <p className="text-[10px] text-slate-600 text-center">
+            Test card: <span className="font-mono text-slate-500">4242 4242 4242 4242</span>
+            &nbsp;· Any future date · Any CVC
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

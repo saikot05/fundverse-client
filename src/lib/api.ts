@@ -90,6 +90,13 @@ export const authService = {
     };
 
     localStorage.setItem('user', JSON.stringify(userData));
+    try {
+      const tokenRes = await authClient.token();
+      if (tokenRes?.data?.token) {
+        localStorage.setItem('token', tokenRes.data.token);
+      }
+    } catch (e) {}
+
     return { user: userData };
   },
 
@@ -114,6 +121,13 @@ export const authService = {
     };
 
     localStorage.setItem('user', JSON.stringify(userData));
+    try {
+      const tokenRes = await authClient.token();
+      if (tokenRes?.data?.token) {
+        localStorage.setItem('token', tokenRes.data.token);
+      }
+    } catch (e) {}
+
     return { user: userData };
   },
 
@@ -133,6 +147,13 @@ export const authService = {
       image: responseData?.user?.image || undefined,
     };
 
+    try {
+      const tokenRes = await authClient.token();
+      if (tokenRes?.data?.token) {
+        localStorage.setItem('token', tokenRes.data.token);
+      }
+    } catch (e) {}
+
     return { user: userData };
   },
 
@@ -142,6 +163,7 @@ export const authService = {
       throw new Error(res.error.message || 'Logout failed.');
     }
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   },
 };
 
@@ -178,11 +200,14 @@ export const campaignService = {
 
 // Payment Services
 export const paymentService = {
-  createPaymentIntent: async (amount: number) => {
-    return fetchApi('/payments/create-payment-intent', { method: 'POST', body: JSON.stringify({ amount }) });
+  createCheckoutSession: async (amount: number, credits: number) => {
+    return fetchApi('/payments/create-checkout-session', {
+      method: 'POST',
+      body: JSON.stringify({ amount, credits }),
+    });
   },
-  verifyPayment: async (paymentIntentId: string) => {
-    return fetchApi('/payments/verify', { method: 'POST', body: JSON.stringify({ paymentIntentId }) });
+  getSessionStatus: async (sessionId: string) => {
+    return fetchApi(`/payments/session-status?session_id=${sessionId}`, { method: 'GET' });
   },
   getHistory: async () => {
     return fetchApi('/payments/history', { method: 'GET' });

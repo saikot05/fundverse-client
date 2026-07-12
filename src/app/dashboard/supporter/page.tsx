@@ -2,32 +2,33 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentService, contributionService } from '../../../lib/api';
 import CheckoutForm from '../../../components/CheckoutForm';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
 import {
   Coins,
-  ArrowUpRight,
-  History,
-  CreditCard,
   PlusCircle,
   PiggyBank,
   Heart,
   ChevronRight,
   TrendingUp,
+  History,
+  CreditCard,
+  ArrowUpRight,
 } from 'lucide-react';
 import Link from 'next/link';
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51Pabcdefghijklmnopqrstuvwxyz123456789'
-);
+const CREDIT_PACKAGES = [
+  { credits: 100, amount: 10 },
+  { credits: 300, amount: 25 },
+  { credits: 800, amount: 60 },
+  { credits: 1500, amount: 110 },
+];
 
 export default function SupporterDashboard() {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedBuyAmount, setSelectedBuyAmount] = useState<number | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<{ amount: number; credits: number } | null>(null);
 
   // Fetch Payment History
   const { data: paymentsData, isLoading: paymentsLoading } = useQuery({
@@ -56,10 +57,8 @@ export default function SupporterDashboard() {
     );
   }
 
-  const handlePaymentSuccess = async () => {
-    setSelectedBuyAmount(null);
-    await refreshUser();
-    queryClient.invalidateQueries({ queryKey: ['payments-history'] });
+  const handleCloseCheckout = () => {
+    setSelectedPackage(null);
   };
 
   const payments = paymentsData?.payments || [];
@@ -131,27 +130,26 @@ export default function SupporterDashboard() {
               Choose an amount to top up your wallet. Backers use credits to support creative campaigns.
             </p>
 
-            {selectedBuyAmount === null ? (
-              <div className="grid grid-cols-2 gap-3">
-                {[10, 25, 50, 100, 250, 500].map((amt) => (
-                  <button
-                    key={amt}
-                    onClick={() => setSelectedBuyAmount(amt)}
-                    className="py-3 px-4 rounded-xl border border-white/10 bg-slate-900/50 hover:bg-indigo-500/10 hover:border-indigo-500 text-slate-200 hover:text-white font-semibold transition flex flex-col items-center justify-center cursor-pointer"
-                  >
-                    <span className="text-lg">${amt}</span>
-                    <span className="text-[10px] text-slate-500">{amt} Credits</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <Elements stripe={stripePromise}>
-                <CheckoutForm
-                  amount={selectedBuyAmount}
-                  onSuccess={handlePaymentSuccess}
-                  onCancel={() => setSelectedBuyAmount(null)}
-                />
-              </Elements>
+            <div className="grid grid-cols-2 gap-3">
+              {CREDIT_PACKAGES.map((pkg) => (
+                <button
+                  key={pkg.credits}
+                  onClick={() => setSelectedPackage(pkg)}
+                  className="py-3 px-4 rounded-xl border border-white/10 bg-slate-900/50 hover:bg-indigo-500/10 hover:border-indigo-500 text-slate-200 hover:text-white font-semibold transition flex flex-col items-center justify-center cursor-pointer"
+                >
+                  <span className="text-lg">${pkg.amount}</span>
+                  <span className="text-[10px] text-slate-500">{pkg.credits} Credits</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Embedded Checkout Modal Overlay */}
+            {selectedPackage && (
+              <CheckoutForm
+                amount={selectedPackage.amount}
+                credits={selectedPackage.credits}
+                onCancel={handleCloseCheckout}
+              />
             )}
           </div>
         </div>
