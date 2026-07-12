@@ -133,6 +133,14 @@ export default function Navbar() {
             >
               How It Works
             </Link>
+            <a
+              href="https://github.com/saikot05/fundverse-client"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-indigo-400"
+            >
+              Join as Developer
+            </a>
           </nav>
 
           {/* Right Action Menu */}
@@ -380,6 +388,15 @@ export default function Navbar() {
           >
             How It Works
           </Link>
+          <a
+            href="https://github.com/saikot05/fundverse-client"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-500 dark:hover:text-white"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Join as Developer
+          </a>
 
           {user ? (
             <div className="border-t border-slate-100 dark:border-white/5 pt-3 space-y-2">
