@@ -38,7 +38,7 @@ export default function LoginPage() {
     }
   };
 
-  const { register: formRegister, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
+  const { register: formRegister, handleSubmit, setValue, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -124,6 +124,33 @@ export default function LoginPage() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               <span>{loading ? 'Signing in...' : 'Sign In'}</span>
             </button>
+
+            {/* Demo Auto-fill Buttons */}
+            <div className="space-y-2 pt-2 border-t border-dashed border-separator">
+              <p className="text-[10px] font-bold text-center uppercase tracking-wider text-muted">Quick Demo Accounts (Auto-fill)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('email', 'supporter@fundverse.io');
+                    setValue('password', 'supporter123');
+                  }}
+                  className="py-2 px-3 border border-dashed border-indigo-500/30 hover:border-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold rounded-xl text-xs transition cursor-pointer text-center"
+                >
+                  Demo Supporter
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('email', 'creator@fundverse.io');
+                    setValue('password', 'creator123');
+                  }}
+                  className="py-2 px-3 border border-dashed border-violet-500/30 hover:border-violet-500 bg-violet-500/5 hover:bg-violet-500/10 text-violet-600 dark:text-violet-400 font-bold rounded-xl text-xs transition cursor-pointer text-center"
+                >
+                  Demo Creator
+                </button>
+              </div>
+            </div>
           </form>
 
           {/* Divider */}

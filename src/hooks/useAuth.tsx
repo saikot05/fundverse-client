@@ -33,19 +33,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (localToken && localUser) {
           setToken(localToken);
           setUser(JSON.parse(localUser));
+        }
 
-          // Fetch fresh user profile from API in background
-          const data = await authService.getCurrentUser();
-          if (data.user) {
-            setUser(data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
-          }
+        // Fetch fresh user profile from API (essential for Google OAuth redirect)
+        const data = await authService.getCurrentUser();
+        if (data.user) {
+          setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          const freshToken = localStorage.getItem('token');
+          if (freshToken) setToken(freshToken);
         }
       } catch (err) {
-        console.error('Failed to restore authentication session:', err);
-        // Session expired or invalid
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        // Safe check: Only clear if they had some local credentials previously
+        if (localStorage.getItem('token') || localStorage.getItem('user')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+          setToken(null);
+        }
       } finally {
         setLoading(false);
       }

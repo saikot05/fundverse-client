@@ -30,6 +30,12 @@ export const auth = betterAuth({
   },
   account: {
     modelName: 'accounts',
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ['google'],
+      disableImplicitLinking: false,
+      requireLocalEmailVerified: false,
+    },
   },
   verification: {
     modelName: 'verifications',

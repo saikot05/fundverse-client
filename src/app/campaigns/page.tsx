@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { campaignService } from '../../lib/api';
 import CampaignCard from '../../components/CampaignCard';
 import { Search, SlidersHorizontal, ArrowLeft, ArrowRight, Loader } from 'lucide-react';
+import { CampaignSkeleton } from '../../components/Skeletons';
 
 export default function ExploreCampaignsPage() {
   const [page, setPage] = useState<number>(1);
@@ -159,8 +160,10 @@ export default function ExploreCampaignsPage() {
 
       {/* Campaigns Listing Grid */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="spinner" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <CampaignSkeleton key={idx} />
+          ))}
         </div>
       ) : campaigns.length === 0 ? (
         <div className="text-center py-20 bg-slate-100/50 dark:bg-slate-900/10 border border-dashed border-slate-200 dark:border-white/5 rounded-3xl">

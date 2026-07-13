@@ -86,7 +86,14 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex-1 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+    <div className="flex-1 text-slate-800 dark:text-slate-200 transition-colors duration-300 relative">
+      {/* 3D Animated Mesh/Orb Gradients */}
+      <div className="mesh-gradient-container">
+        <div className="mesh-orb orb-1" />
+        <div className="mesh-orb orb-2" />
+        <div className="mesh-orb orb-3" />
+      </div>
+
       {/* Hero Section with custom slider */}
       <section className="relative h-[550px] w-full overflow-hidden border-b border-slate-200 dark:border-white/10 flex items-center">
         {/* Background Image Slider */}
