@@ -3,9 +3,10 @@ import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
 import { jwt } from 'better-auth/plugins';
 
-const mongoUri = process.env.MONGODB_URI as string;
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/dummy';
 const client = new MongoClient(mongoUri);
-const db = client.db(process.env.MONGODB_DB_NAME);
+const db = client.db(process.env.MONGODB_DB_NAME || 'fundverse');
+
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
