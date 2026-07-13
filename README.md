@@ -1,44 +1,90 @@
-# FundVerse — Premium Crowdfunding Platform (Frontend Client)
+# 🌌 FundVerse — Premium Crowdfunding Platform
 
-FundVerse is a modern, high-performance, and secure crowdfunding platform designed for creators, developers, and backers to bring projects to life. Built using Next.js 16, React 19, and Tailwind CSS v4, the application features glassmorphic aesthetics, interactive Recharts analytics, Zod forms validation, and a custom Better Auth integration supporting credentials and Google OAuth.
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-success?style=for-the-badge&logo=vercel)](https://fundverse-client.vercel.app)
+[![React Version](https://img.shields.io/badge/React-19.2.4-blue?style=for-the-badge&logo=react)](https://react.dev)
+[![Next.js Version](https://img.shields.io/badge/Next.js-16.2.10-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4.0-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
 
----
+FundVerse is a modern, high-performance, and secure crowdfunding platform designed for game developers, software creators, and project supporters to collaborate. Built on a cutting-edge stack using Next.js 16 (Turbopack), React 19, and Tailwind CSS v4, the application features modern glassmorphism designs, fluid 3D floating mesh animations, Zod form validations, and custom Better Auth integrations.
 
-## 🚀 Key Features
-
-*   **Premium Glassmorphism UI**: Beautiful, dark-mode-first interfaces featuring smooth 3D animated mesh gradient backgrounds, interactive scales, and custom hover states.
-*   **Flexible Authentication System**: Integrates Better Auth supporting credentials and Google OAuth with automatic account merging and verification bypass.
-*   **Dynamic Campaigns Hub**:
-    *   **Explore Page**: Real-time debounced title/category search, multi-filter selectors, 5 sorting configurations, and pagination footer controls.
-    *   **Interactive Hero Slider**: Configured with play/pause animations and call-to-actions.
-    *   **Details Page**: Overview specification grids, contribution timeline histories, related campaign sliders, and user audit report modal forms.
-*   **Protected Dashboards**:
-    *   **Add Campaign Form**: Form validations using React Hook Form + Zod, deadline calendar pickers, and image loaders.
-    *   **Manage Campaigns Table**: A responsive grid to track campaign progress, pledge statistics, and delete actions with confirmation checks.
-*   **Analytical Dashboards**: Supports Recharts statistics displaying funding categories, timeline goals, and credit levels.
+🔗 **Live Frontend URL**: [https://fundverse-client.vercel.app](https://fundverse-client.vercel.app)  
+🔗 **Live API Gateway URL**: [https://fundverse-server.vercel.app](https://fundverse-server.vercel.app)
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Key Technical Features
 
-*   **Framework**: Next.js 16.2.10 (Turbopack) using React 19
-*   **Language**: TypeScript (Rigid custom typings)
-*   **Styling**: Tailwind CSS v4 + HeroUI components
-*   **Icons**: Lucide Icons
-*   **Charts**: Recharts
-*   **State & Forms**: React Hook Form + Zod validation
-*   **Authentication**: Better Auth (supporting Google OAuth and session cookies)
+### 1. Advanced 3D & Responsive UI/UX
+*   **3D Floating Mesh Gradients**: Drifting, blurred ambient color orbs (`orb-1`, `orb-2`, and `orb-3` using custom brand OKLCH colors) built with CSS `@keyframes` that slide and scale smoothly across page layers.
+*   **Translucent Glassmorphism**: Custom layout containers styled with `.glass` classes defining soft-blurred backdrops (`backdrop-filter: blur(14px)`), light borders, and reactive hover animations.
+*   **Component Symmetry**: Clean layout alignments with uniform rounding (`rounded-2xl`) and scale hover behaviors.
+*   **High-Fidelity Copy**: Fully production-ready copywriting without generic placeholders.
+
+### 2. Multi-Vector Explore & Filtering Hub
+*   **Live Debounced Search**: Instant search indexing campaign titles and categories.
+*   **Multi-Filter Panel**: Active filters matching category select pills AND target credit ranges via custom slider selectors.
+*   **5 Sorting Matrices**: Sort by approaching deadline, target goal (low/high), and pledge progress (low/high).
+*   **Pagination Footer**: Responsive pagination controls with Next/Prev page gates.
+*   **Campaign Skeletons**: Integrated fallback skeletons (`CampaignSkeleton`) to prevent layout shifts during content fetching.
+
+### 3. Comprehensive Campaign Details
+*   Dynamic campaign banner featuring category status indicators.
+*   Pledge panels displaying credits progress and funding percentages.
+*   Unified backer logs showing contribution history records with relative timestamps.
+*   Category-specific campaign recommendation sliders.
+*   Built-in audit report forms for reporting fraudulent content.
+
+### 4. Robust Authentication & Social Auto-Linking
+*   **Quick Demo Accounts**: One-click autofill credentials for testing as `Demo Supporter` or `Demo Creator`.
+*   **Better Auth & Google OAuth**: Complete Social Login integration.
+*   **Automatic Account Merging**: Configured `disableImplicitLinking: false` and `requireLocalEmailVerified: false` to allow Google sign-ins to automatically link and merge with existing local email/password records (such as pre-existing seeded users).
+*   **Cookie Session Restoration**: Hook updates to always check the active session via `authService.getCurrentUser()` on mount, correctly parsing redirections.
 
 ---
 
-## 📦 Getting Started
+## 🛠️ Architecture & Folder Structure
 
-### Prerequisites
+```text
+fundverse-client/
+├── public/                 # Static assets and media files
+├── src/
+│   ├── app/                # Next.js App Router folders
+│   │   ├── api/auth/       # Better Auth backend handlers
+│   │   ├── campaigns/      # Explore and campaign detail pages
+│   │   ├── dashboard/      # User role-specific dashboard views
+│   │   └── items/          # Campaign creation and management pages
+│   ├── components/         # Reusable presentation layout nodes
+│   ├── hooks/              # Custom context states (useAuth, useTheme)
+│   ├── lib/                # Client configurations (API, Auth client)
+│   └── types/              # TypeScript interface definitions
+├── .env.local              # Local environment overrides
+├── vercel.json             # Vercel routing configurations
+└── package.json            # Script registries & dependency configurations
+```
 
-*   Node.js 18+ or 20+
-*   npm or yarn
+---
 
-### Installation
+## ⚙️ Environment Variables Configuration
+
+Create a `.env.local` file in your root folder:
+
+| Variable Name | Description | Value Example |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | The client base URL for auth redirects | `https://fundverse-client.vercel.app` |
+| `BETTER_AUTH_URL` | The server-side base URL for session check | `https://fundverse-client.vercel.app` |
+| `BACKEND_API_URL` | The Express backend API host | `https://fundverse-server.vercel.app` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Publishable key for Stripe checkout | `pk_test_...` |
+| `NEXT_PUBLIC_IMGBB_API_KEY` | API key for Image Upload service | `19a60...` |
+| `MONGODB_URI` | The MongoDB Atlas connection string | `mongodb+srv://...` |
+| `MONGODB_DB_NAME` | The target database name | `fundverse` |
+| `BETTER_AUTH_SECRET` | Secret key used for hash encryption | `L90z...` |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | `your_client_id.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | `GOCSPX-...` |
+
+---
+
+## 📦 Local Installation & Run
 
 1. Clone the repository:
    ```bash
@@ -51,43 +97,20 @@ FundVerse is a modern, high-performance, and secure crowdfunding platform design
    npm install
    ```
 
-3. Create a `.env.local` file in the root directory:
-   ```env
-   # Public keys
-   NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
-   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-   NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
-
-   # Backend API Proxy URL
-   BACKEND_API_URL=http://localhost:5000
-
-   # Database & Secrets
-   MONGODB_URI=your_mongodb_atlas_connection_string
-   MONGODB_DB_NAME=fundverse
-   BETTER_AUTH_SECRET=your_better_auth_secret_hash
-
-   # Google Social Credentials
-   GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   ```
-
-4. Run the development server:
+3. Run the development server:
    ```bash
    npm run dev
    ```
 
-5. Access the application at [http://localhost:3000](http://localhost:3000).
+4. Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
-## ☁️ Deployment Guidelines (Vercel)
+## ☁️ Production Deployment (Vercel)
 
-To deploy the frontend to Vercel:
-
-1. Import the repository into your Vercel Dashboard.
-2. Select the **Next.js** framework preset.
-3. Configure the environment variables defined in your `.env.local` file.
-   * *Note: Ensure `NEXT_PUBLIC_BETTER_AUTH_URL` and `BETTER_AUTH_URL` match your Vercel domain (e.g. `https://your-app.vercel.app`), and `BACKEND_API_URL` points to your deployed server URL.*
+1. Import the repository into Vercel.
+2. Ensure the framework preset is set to **Next.js**.
+3. Add the environment variables defined above to your project settings.
 4. Deploy the project.
-5. In your Google Cloud Console, update the Authorized Redirect URI to:
-   `https://your-app.vercel.app/api/auth/callback/google`
+5. In your Google Cloud Console, add this callback redirect URL:
+   `https://your-domain.vercel.app/api/auth/callback/google`
