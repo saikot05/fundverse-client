@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { campaignService, withdrawalService, statsService } from '../../../lib/api';
+import { campaignService, withdrawalService, statsService, contributionService } from '../../../lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -67,6 +67,13 @@ export default function CreatorDashboard() {
     enabled: !!user,
   });
 
+  // Fetch contributions to creator's campaigns
+  const { data: contributionsData, isLoading: contributionsLoading } = useQuery({
+    queryKey: ['creator-contributions'],
+    queryFn: contributionService.getCreatorCampaignContributions,
+    enabled: !!user,
+  });
+
   // Delete campaign mutation
   const deleteCampaignMutation = useMutation({
     mutationFn: campaignService.delete,
@@ -103,6 +110,7 @@ export default function CreatorDashboard() {
 
   const campaigns = campaignsData?.campaigns || [];
   const withdrawals = withdrawalsData?.withdrawals || [];
+  const contributions = contributionsData?.contributions || [];
 
   const handleDeleteCampaign = (id: string) => {
     if (confirm('Are you sure you want to delete this campaign?')) {
@@ -322,6 +330,34 @@ export default function CreatorDashboard() {
 
         {/* Charts & Analytics (Right Col - spans 1) */}
         <div className="lg:col-span-1 space-y-6">
+          {/* Campaigns Progress BarChart */}
+          {campaigns.length > 0 && (
+            <div className="glass p-6 rounded-2xl">
+              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-indigo-400" />
+                <span>Campaign Progress</span>
+              </h2>
+              <div className="h-48 w-full text-xs">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={campaigns.slice(0, 5).map((camp: any) => ({
+                      name: camp.title.length > 12 ? camp.title.slice(0, 12) + '...' : camp.title,
+                      Raised: camp.currentAmount,
+                      Goal: camp.targetAmount,
+                    }))}
+                    margin={{ top: 10, right: 5, left: -20, bottom: 5 }}
+                  >
+                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={9} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={9} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
+                    <Bar dataKey="Raised" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Goal" fill="#312e81" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
           <div className="glass p-6 rounded-2xl">
             <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-400" />
@@ -351,6 +387,37 @@ export default function CreatorDashboard() {
               </div>
             ) : (
               <p className="text-xs text-slate-500 text-center py-10">No category statistics available.</p>
+            )}
+          </div>
+
+          {/* Recent Pledges Feed */}
+          <div className="glass p-6 rounded-2xl">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <History className="h-5 w-5 text-emerald-400" />
+              <span>Recent Pledges</span>
+            </h2>
+
+            {contributionsLoading ? (
+              <div className="h-10 bg-slate-900 animate-pulse rounded-xl" />
+            ) : contributions.length === 0 ? (
+              <p className="text-xs text-slate-500 text-center py-6">No contributions received yet.</p>
+            ) : (
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {contributions.map((c: any) => (
+                  <div key={c._id} className="p-3 bg-slate-900/50 border border-white/5 rounded-xl text-xs flex justify-between items-center animate-fadeIn">
+                    <div>
+                      <p className="font-semibold text-slate-200">{c.supporterId?.name || 'Anonymous Supporter'}</p>
+                      <p className="text-[9px] text-slate-500 mt-0.5 truncate max-w-[150px]">
+                        Campaign: {c.campaignId?.title}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-emerald-400">+{c.amount} Credits</p>
+                      <p className="text-[8px] text-slate-500 mt-0.5">{new Date(c.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 

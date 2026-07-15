@@ -29,6 +29,8 @@ export default function SupporterDashboard() {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPackage, setSelectedPackage] = useState<{ amount: number; credits: number } | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>('');
+  const [customCredits, setCustomCredits] = useState<string>('');
 
   // Fetch Payment History
   const { data: paymentsData, isLoading: paymentsLoading } = useQuery({
@@ -88,33 +90,64 @@ export default function SupporterDashboard() {
       {/* Grid Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Wallet Balance */}
-        <div className="glass p-6 rounded-2xl relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/20 text-indigo-400">
-            <Coins className="h-6 w-6" />
+        <div className="glass p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between h-40">
+          <div>
+            <div className="flex justify-between items-start">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit Balance</p>
+              <div className="bg-indigo-500/10 p-2 rounded-xl border border-indigo-500/20 text-indigo-400">
+                <Coins className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-white mt-2">{user.credits} Credits</p>
+            <p className="text-[10px] text-slate-500 mt-1">1 Credit = $1.00 USD</p>
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit Balance</p>
-          <p className="text-3xl font-extrabold text-white mt-3">{user.credits} Credits</p>
-          <p className="text-xs text-slate-500 mt-1">1 Credit = $1.00 USD</p>
+          <div className="mt-2">
+            <div className="flex justify-between text-[10px] text-slate-400 font-semibold mb-1">
+              <span>Pledge Ratio</span>
+              <span>{totalDonated > 0 ? Math.round((totalDonated / (totalDonated + user.credits)) * 100) : 0}%</span>
+            </div>
+            <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full" 
+                style={{ width: `${totalDonated > 0 ? Math.round((totalDonated / (totalDonated + user.credits)) * 100) : 0}%` }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Total Contributed */}
-        <div className="glass p-6 rounded-2xl relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-violet-500/10 p-2.5 rounded-xl border border-violet-500/20 text-violet-400">
-            <PiggyBank className="h-6 w-6" />
+        <div className="glass p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between h-40">
+          <div>
+            <div className="flex justify-between items-start">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Contributed</p>
+              <div className="bg-violet-500/10 p-2 rounded-xl border border-violet-500/20 text-violet-400">
+                <PiggyBank className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-white mt-2">{totalDonated} Credits</p>
+            <p className="text-[10px] text-slate-500 mt-1">Invested in creative ideas</p>
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Contributed</p>
-          <p className="text-3xl font-extrabold text-white mt-3">{totalDonated} Credits</p>
-          <p className="text-xs text-slate-500 mt-1">Invested in creative ideas</p>
+          <div className="text-[10px] text-indigo-400 flex items-center gap-1">
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span>Supporting local developers</span>
+          </div>
         </div>
 
         {/* Backed Projects Count */}
-        <div className="glass p-6 rounded-2xl relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 text-emerald-400">
-            <Heart className="h-6 w-6" />
+        <div className="glass p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between h-40">
+          <div>
+            <div className="flex justify-between items-start">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Campaigns Backed</p>
+              <div className="bg-emerald-500/10 p-2 rounded-xl border border-emerald-500/20 text-emerald-400">
+                <Heart className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold text-white mt-2">{contributions.length} Campaigns</p>
+            <p className="text-[10px] text-slate-500 mt-1">Active backing initiatives</p>
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Campaigns Backed</p>
-          <p className="text-3xl font-extrabold text-white mt-3">{contributions.length} Campaigns</p>
-          <p className="text-xs text-slate-500 mt-1">Active backing initiatives</p>
+          <div className="text-[10px] text-slate-400">
+            <span>Average pledge: {contributions.length > 0 ? Math.round(totalDonated / contributions.length) : 0} credits</span>
+          </div>
         </div>
       </div>
 
@@ -143,12 +176,59 @@ export default function SupporterDashboard() {
               ))}
             </div>
 
+            <div className="border-t border-white/5 pt-4 mt-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Or Enter Custom Amount</p>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 text-xs">$</span>
+                  <input
+                    type="number"
+                    min="5"
+                    max="1000"
+                    placeholder="Custom amount (min $5)"
+                    value={customAmount}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCustomAmount(val);
+                      const amt = parseFloat(val) || 0;
+                      setCustomCredits(amt > 0 ? String(Math.round(amt * 10)) : '');
+                    }}
+                    className="w-full bg-slate-900/60 border border-white/10 rounded-xl py-2 pl-7 pr-3 text-xs text-white focus:outline-none focus:border-indigo-500 transition"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const amt = parseFloat(customAmount);
+                    const creds = parseInt(customCredits);
+                    if (amt >= 5 && creds > 0) {
+                      setSelectedPackage({ amount: amt, credits: creds });
+                    } else {
+                      alert('Please enter an amount of $5 or more.');
+                    }
+                  }}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition cursor-pointer"
+                >
+                  Buy
+                </button>
+              </div>
+              {customCredits && (
+                <p className="text-[10px] text-indigo-400">
+                  You will receive <span className="font-bold">{customCredits} Credits</span>.
+                </p>
+              )}
+            </div>
+
             {/* Embedded Checkout Modal Overlay */}
             {selectedPackage && (
               <CheckoutForm
                 amount={selectedPackage.amount}
                 credits={selectedPackage.credits}
                 onCancel={handleCloseCheckout}
+                onSuccess={async () => {
+                  await refreshUser();
+                  queryClient.invalidateQueries({ queryKey: ['payments-history'] });
+                }}
               />
             )}
           </div>

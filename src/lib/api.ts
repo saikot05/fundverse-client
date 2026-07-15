@@ -225,6 +225,9 @@ export const contributionService = {
   getMyContributions: async () => {
     return fetchApi('/contributions/my-contributions', { method: 'GET' });
   },
+  getCreatorCampaignContributions: async () => {
+    return fetchApi('/contributions/creator', { method: 'GET' });
+  },
 };
 
 // Withdrawal Services

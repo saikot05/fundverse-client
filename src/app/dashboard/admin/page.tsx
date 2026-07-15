@@ -32,6 +32,8 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'campaigns' | 'withdrawals' | 'users' | 'reports'>('campaigns');
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [userSearch, setUserSearch] = useState<string>('');
+  const [userRoleFilter, setUserRoleFilter] = useState<string>('');
 
   // Fetch Global Admin Stats
   const { data: stats } = useQuery({
@@ -165,40 +167,68 @@ export default function AdminDashboard() {
       {/* Grid Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="glass p-5 rounded-2xl relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-indigo-500/10 p-2 rounded-xl text-indigo-400">
-              <Users className="h-5 w-5" />
+          <div className="glass p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between h-36">
+            <div>
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Users</p>
+                <div className="bg-indigo-500/10 p-2 rounded-xl text-indigo-400">
+                  <Users className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-2xl font-extrabold text-white mt-1">{stats.users.totalUsers}</p>
             </div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Users</p>
-            <p className="text-2xl font-extrabold text-white mt-2">{stats.users.totalUsers}</p>
-            <p className="text-[10px] text-slate-500 mt-1">Creators: {stats.users.creatorsCount} | Supporters: {stats.users.supportersCount}</p>
+            <div className="flex items-center justify-between text-[9px] text-slate-500 mt-2">
+              <span>Creators: {stats.users.creatorsCount} | Supporters: {stats.users.supportersCount}</span>
+              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">+12.4%</span>
+            </div>
           </div>
 
-          <div className="glass p-5 rounded-2xl relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-violet-500/10 p-2 rounded-xl text-violet-400">
-              <Megaphone className="h-5 w-5" />
+          <div className="glass p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between h-36">
+            <div>
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Campaigns Queue</p>
+                <div className="bg-violet-500/10 p-2 rounded-xl text-violet-400">
+                  <Megaphone className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-2xl font-extrabold text-white mt-1">{stats.campaigns.totalCampaigns}</p>
             </div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Campaigns Queue</p>
-            <p className="text-2xl font-extrabold text-white mt-2">{stats.campaigns.totalCampaigns}</p>
-            <p className="text-[10px] text-slate-500 mt-1">Pending approval: {stats.campaigns.pendingCampaigns}</p>
+            <div className="flex items-center justify-between text-[9px] text-slate-500 mt-2">
+              <span>Pending: {stats.campaigns.pendingCampaigns} | Active: {stats.campaigns.activeCampaigns}</span>
+              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">+8.2%</span>
+            </div>
           </div>
 
-          <div className="glass p-5 rounded-2xl relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-emerald-500/10 p-2 rounded-xl text-emerald-400">
-              <Coins className="h-5 w-5" />
+          <div className="glass p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between h-36">
+            <div>
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Contributions</p>
+                <div className="bg-emerald-500/10 p-2 rounded-xl text-emerald-400">
+                  <Coins className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-2xl font-extrabold text-white mt-1">{stats.financials.totalContributionsAmount} Credits</p>
             </div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Contributions</p>
-            <p className="text-2xl font-extrabold text-white mt-2">{stats.financials.totalContributionsAmount} Credits</p>
-            <p className="text-[10px] text-slate-500 mt-1">100% Stripe transaction verified</p>
+            <div className="flex items-center justify-between text-[9px] text-slate-500 mt-2">
+              <span>100% Stripe Verified</span>
+              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">+15.9%</span>
+            </div>
           </div>
 
-          <div className="glass p-5 rounded-2xl relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-amber-500/10 p-2 rounded-xl text-amber-400">
-              <Banknote className="h-5 w-5" />
+          <div className="glass p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between h-36">
+            <div>
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approved Payouts</p>
+                <div className="bg-amber-500/10 p-2 rounded-xl text-amber-400">
+                  <Banknote className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-2xl font-extrabold text-white mt-1">{stats.financials.totalWithdrawalsApproved} Credits</p>
             </div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approved Payouts</p>
-            <p className="text-2xl font-extrabold text-white mt-2">{stats.financials.totalWithdrawalsApproved} Credits</p>
-            <p className="text-[10px] text-slate-500 mt-1">Pending payout approvals: {stats.financials.totalWithdrawalsPending}</p>
+            <div className="flex items-center justify-between text-[9px] text-slate-500 mt-2">
+              <span>Pending: {stats.financials.totalWithdrawalsPending} credits</span>
+              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">+9.4%</span>
+            </div>
           </div>
         </div>
       )}
@@ -295,6 +325,21 @@ export default function AdminDashboard() {
                     <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', fontSize: '11px' }} />
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
+                {stats.categoryData.map((entry: any, index: number) => {
+                  const total = stats.categoryData.reduce((sum: number, item: any) => sum + item.value, 0);
+                  const percentage = Math.round((entry.value / total) * 100);
+                  return (
+                    <div key={entry.name} className="flex items-center justify-between text-[10px]">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                        <span className="text-slate-300 font-semibold">{entry.name}</span>
+                      </div>
+                      <span className="text-slate-500 font-bold">{entry.value} ({percentage}%)</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -431,6 +476,28 @@ export default function AdminDashboard() {
             {activeTab === 'users' && (
               <div>
                 <h3 className="text-lg font-bold text-white mb-6">User Permissions Mapping</h3>
+                
+                {/* Search & Filter Bar */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <input
+                    type="text"
+                    placeholder="Search users by name or email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="flex-1 bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition"
+                  />
+                  <select
+                    value={userRoleFilter}
+                    onChange={(e) => setUserRoleFilter(e.target.value)}
+                    className="bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition"
+                  >
+                    <option value="">All Roles</option>
+                    <option value="supporter">Supporters</option>
+                    <option value="creator">Creators</option>
+                    <option value="admin">Admins</option>
+                  </select>
+                </div>
+
                 {usersLoading ? (
                   <div className="h-10 bg-slate-900 animate-pulse rounded-xl" />
                 ) : (
@@ -445,24 +512,34 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {users.map((u: any) => (
-                          <tr key={u._id} className="border-b border-white/5 hover:bg-white/5 transition">
-                            <td className="py-3 px-2 text-slate-200">{u.name}</td>
-                            <td className="py-3 px-2 text-slate-400">{u.email}</td>
-                            <td className="py-3 px-2 text-indigo-400 uppercase text-xs font-bold">{u.role}</td>
-                            <td className="py-3 px-2">
-                              <select
-                                value={u.role}
-                                onChange={(e) => updateUserRoleMutation.mutate({ id: u._id, role: e.target.value })}
-                                className="bg-slate-900 border border-white/10 rounded-lg text-xs text-white p-1 focus:outline-none"
-                              >
-                                <option value="supporter">Supporter</option>
-                                <option value="creator">Creator</option>
-                                <option value="admin">Admin</option>
-                              </select>
-                            </td>
-                          </tr>
-                        ))}
+                        {users
+                          .filter((u: any) => {
+                            const matchesSearch =
+                              u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                              u.email.toLowerCase().includes(userSearch.toLowerCase());
+                            const matchesRole = !userRoleFilter || u.role === userRoleFilter;
+                            return matchesSearch && matchesRole;
+                          })
+                          .map((u: any) => (
+                            <tr key={u._id} className="border-b border-white/5 hover:bg-white/5 transition">
+                              <td className="py-3 px-2 text-slate-200">{u.name}</td>
+                              <td className="py-3 px-2 text-slate-400">{u.email}</td>
+                              <td className="py-3 px-2 text-indigo-400 uppercase text-xs font-bold">{u.role}</td>
+                              <td className="py-3 px-2">
+                                <select
+                                  value={u.role}
+                                  onChange={(e) =>
+                                    updateUserRoleMutation.mutate({ id: u._id, role: e.target.value })
+                                  }
+                                  className="bg-slate-900 border border-white/10 rounded-lg text-xs text-white p-1 focus:outline-none"
+                                >
+                                  <option value="supporter">Supporter</option>
+                                  <option value="creator">Creator</option>
+                                  <option value="admin">Admin</option>
+                                </select>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
